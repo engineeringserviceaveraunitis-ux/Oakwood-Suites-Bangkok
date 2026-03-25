@@ -417,27 +417,6 @@ body::before {
 .combo-item:hover, .combo-item.active { background:var(--accent); color:#000; }
 
 </style>
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, orderBy, query, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBau2ONqedioD-S73lFVEqyLOpbTAUBFuU",
-  authDomain: "oakwood-suites-bangkok.firebaseapp.com",
-  projectId: "oakwood-suites-bangkok",
-  storageBucket: "oakwood-suites-bangkok.firebasestorage.app",
-  messagingSenderId: "116441519988",
-  appId: "1:116441519988:web:0ec170f8649192d76bfe21"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// Expose to window for use by other scripts
-window._db = db;
-window._fsAPI = { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, orderBy, query, serverTimestamp };
-window._firebaseReady = true;
-</script>
 </head>
 <body>
 
@@ -532,7 +511,7 @@ window._firebaseReady = true;
         <div style="flex-shrink:0;background:#fff;padding:12px;border-radius:6px" id="qr-box"></div>
         <div style="flex:1;min-width:200px">
           <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Dashboard URL</div>
-          <input id="dashboard-url-input" type="text" value="https://engineeringserviceaveraunitis-ux.github.io/Oakwood-Suites-Bangkok/" oninput="updateQR(this.value)" style="font-family:var(--mono);font-size:12px;color:var(--accent);word-break:break-all;background:var(--surface2);padding:10px 14px;border-radius:4px;border:1px solid var(--border);width:100%;outline:none;box-sizing:border-box;" />
+          <div style="font-family:var(--mono);font-size:12px;color:var(--accent);word-break:break-all;background:var(--surface2);padding:10px 14px;border-radius:4px;border:1px solid var(--border)">https://effortless-manatee-531599.netlify.app</div>
           <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:12px;line-height:1.7">
             สแกน QR Code ด้วยกล้องมือถือ<br>เพื่อเปิดหน้า Dashboard ได้ทันที
           </div>
@@ -583,17 +562,6 @@ window._firebaseReady = true;
           <div class="mfield"><label>ชื่อย่อ (Highlight สีฟ้า)</label><input type="text" id="ps-name-hl" placeholder="เช่น Bangkok"></div>
           <div class="mfield"><label>Service No.</label><input type="text" id="ps-svcno" placeholder="เช่น SER.6805003"></div>
           <div class="mfield"><label>ระบบ (System)</label><input type="text" id="ps-system" placeholder="Retail Management System (RMS)"></div>
-          <div class="mfield"><label>Protocol</label><input type="text" id="ps-protocol" placeholder="เช่น RS-485"></div>
-          <div class="mfield"><label>Protocol Sub (เช่น Modbus RTU)</label><input type="text" id="ps-protocol-sub" placeholder="เช่น Modbus RTU"></div>
-          <div class="mfield"><label>Baud Rate</label>
-            <select id="ps-baudrate" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:3px;padding:8px 10px;font-family:var(--mono);font-size:12px">
-              <option value="9600">9600</option>
-              <option value="19200">19200</option>
-              <option value="38400">38400</option>
-              <option value="57600">57600</option>
-              <option value="115200">115200</option>
-            </select>
-          </div>
         </div>
 
         <!-- Loop Selector -->
@@ -947,17 +915,20 @@ window.renderLogs      = function(){};
 
 /* ── FIREBASE via dynamic import ── */
 (async () => {
-  // Wait for Firebase to be ready (loaded via module script)
-  let tries = 0;
-  while(!window._db && tries < 100) {
-    await new Promise(r => setTimeout(r, 100));
-    tries++;
-  }
-  if(!window._db) { console.error('Firebase load timeout'); return; }
-  
-  const db = window._db;
-  const { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, orderBy, query, serverTimestamp } = window._fsAPI;
+const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+const { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, orderBy, query, serverTimestamp }
+  = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
+const firebaseConfig = {
+  apiKey: "AIzaSyBau2ONqedioD-S73lFVEqyLOpbTAUBFuU",
+  authDomain: "oakwood-suites-bangkok.firebaseapp.com",
+  projectId: "oakwood-suites-bangkok",
+  storageBucket: "oakwood-suites-bangkok.firebasestorage.app",
+  messagingSenderId: "116441519988",
+  appId: "1:116441519988:web:0ec170f8649192d76bfe21"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
 
 // Signal that Firebase is ready
 window._firebaseReady = true;
@@ -1117,20 +1088,17 @@ function renderModelCards(){
       </div>
     </div>`;
   });
-    // Protocol card (dynamic)
-  const protoName = window._protocolName || 'RS-485';
-  const protoSub  = window._protocolSub  || 'Modbus RTU';
-  const baudRate  = window._baudRate     || '9600';
+  // Protocol card
   html += `
     <div class="model-card" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px">
       <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:6px">PROTOCOL</div>
-      <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--green)">${protoName}</div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:4px">${protoSub}</div>
-      <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--text);margin-top:10px">
+      <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--green)">RS-485</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:4px">Modbus RTU</div>
+      <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--text);margin-top:8px">
         <span>${totalLoops}</span> <span style="font-size:12px;color:var(--muted)">loops</span>
       </div>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px">Baud Rate ${baudRate}</div>
-    </div>\`;
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Baud Rate 9600 · System RMS</div>
+    </div>`;
   grid.innerHTML = html;
 }
 
@@ -1176,16 +1144,15 @@ function initCombo(wrap) {
   });
 }
 
-function makeComboHTML(id, currentVal, models, extraAttrs) {
-  extraAttrs = extraAttrs || '';
-  var opts = models.map(function(m) {
-    return '<div class="combo-item" data-val="' + m + '">' + m + '</div>';
-  }).join('');
-  return '<span class="combo-wrap">' +
-    '<input type="text" class="combo-inp" id="' + id + '" value="' + (currentVal||'') + '" ' +
-    'placeholder="พิมพ์รุ่น..." autocomplete="off" ' + extraAttrs + '>' +
-    '<div class="combo-list">' + opts + '</div>' +
-    '</span>';
+function makeComboHTML(id, currentVal, models, extraAttrs='') {
+  const opts = models.map(m =>
+    `<div class="combo-item" data-val="${m}">${m}</div>`
+  ).join('');
+  return `<span class="combo-wrap">
+    <input type="text" class="combo-inp" id="${id}" value="${currentVal||''}" 
+           placeholder="พิมพ์รุ่น..." autocomplete="off" ${extraAttrs}>
+    <div class="combo-list">${opts}</div>
+  </span>`;
 }
 
 
@@ -1231,7 +1198,7 @@ function renderLoops(){
   if(titleEl) titleEl.textContent = 'Loop Summary — '+loopCount+' Loops';
   const loopData = window._cfgLoops || LOOPS;
   document.getElementById('loop-grid').innerHTML=loopData.map((l,i)=>{
-    var dots=Array.from({length:l.t},function(_,d){ return '<div class="dot' + (d>=l.on?' off':'') + '"></div>'; }).join('');
+    const dots=Array.from({length:l.t},(_,d)=>`<div class="dot${d>=l.on?' off':''}"></div>`).join('');
     return `<div class="loop-card${l.off>0?' has-off':''}" style="animation:fadeUp .4s ${.02*i}s both">
       <div class="lc-head"><div class="lc-name">Loop ${l.n}</div><div class="lc-model">${l.m}</div></div>
       <div class="dots">${dots}</div>
@@ -1299,8 +1266,8 @@ async function loadProjectSettingsForm(){
   if(!cfg) return;
   const map = {
     'ps-name':cfg.name,'ps-name-hl':cfg.nameHl,'ps-svcno':cfg.svcno,
-    'ps-system':cfg.system,'ps-protocol':cfg.protocol,'ps-protocol-sub':cfg.protocolSub,'ps-total':cfg.total,'ps-online':cfg.online,
-    'ps-offline':cfg.offline,'ps-loops':cfg.loops,'ps-baudrate':cfg.baudrate,
+    'ps-system':cfg.system,'ps-total':cfg.total,'ps-online':cfg.online,
+    'ps-offline':cfg.offline,'ps-loops':cfg.loops,
     'ps-m1-name':cfg.m1Name,'ps-m1-desc':cfg.m1Desc,'ps-m1-count':cfg.m1Count,'ps-m1-note':cfg.m1Note,
     'ps-m2-name':cfg.m2Name,'ps-m2-count':cfg.m2Count,'ps-m2-note':cfg.m2Note,
   };
@@ -1322,7 +1289,7 @@ window.saveProjectSettings = async function(){
 
   const cfg = {};
   const vals = {
-    name:g('ps-name'), nameHl:g('ps-name-hl'), svcno:g('ps-svcno'), system:g('ps-system'), protocol:g('ps-protocol'), protocolSub:g('ps-protocol-sub'), baudrate:g('ps-baudrate'),
+    name:g('ps-name'), nameHl:g('ps-name-hl'), svcno:g('ps-svcno'), system:g('ps-system'),
     total: loopsData.reduce((s,l)=>s+l.t,0),
     online: loopsData.reduce((s,l)=>s+l.on,0),
     offline: loopsData.reduce((s,l)=>s+l.off,0),
@@ -1449,7 +1416,7 @@ window.renderMeterChecklist = function(){
   const MODELS = ['CVM-C5','CVM-C6','CVM-C10','CVM-C11','CVM-C12c','CVM-C30','CVM-C31','CVM-B100','CVM-B150','CVM-A1500','CVMk2','CVM-NRG96','CEM-C6','CEM-C10','CEM-C30','CEM-C31','MK-LCD','EDMk','Other'];
   list.innerHTML='<div class="meter-grid">'+loopData.meters.map(m=>{
     const isOn = m.online;
-    var modelOpts = MODELS.map(function(mo){ return '<div class="combo-item" data-val="' + mo + '">' + mo + '</div>'; }).join('');
+    const modelOpts = MODELS.map(mo=>`<div class="combo-item" data-val="${mo}">${mo}</div>`).join('');
     return `<div class="meter-row ${isOn?'is-online':'is-offline'}" id="mr-${loopNum}-${m.no}" onclick="openMeterDetail('${loopNum}',${m.no})" style="cursor:pointer">
       <input type="checkbox" class="meter-chk" ${isOn?'checked':''}
         onclick="event.stopPropagation()"
@@ -1551,13 +1518,6 @@ window.saveMeterDetail = function(){
     document.getElementById('md-title').textContent = `Loop ${loopNum} — #${m.no} ${m.name}`;
   }
 
-  // Update Protocol card
-  if(cfg.protocol || cfg.baudrate){
-    window._protocolName = cfg.protocol || 'RS-485';
-    window._protocolSub  = cfg.protocolSub || 'Modbus RTU';
-    window._baudRate = cfg.baudrate || '9600';
-    renderModelCards();
-  }
   // Update model cards on dashboard
   renderModelCards();
   // Show saved indicator
@@ -1756,7 +1716,7 @@ window.renderLogs = function(){
         <div class="log-tag ${TCLASS[l.type]}">${TLABEL[l.type]}</div>
         <div class="log-desc">Loop ${l.loop} — ${l.meter}</div>
         ${l.detail?`<div class="log-note">${l.detail}</div>`:''}
-        <div class="log-meta">${meta.map(function(x){ return '<span>'+x+'</span>'; }).join('')}</div>
+        <div class="log-meta">${meta.map(m=>`<span>${m}</span>`).join('')}</div>
         ${imgHtml}
         <button class="btn-edit" onclick="openEditModal('${l._id}')">✏ แก้ไข</button>
       </div>
@@ -1842,11 +1802,9 @@ document.head.appendChild(st);
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-var qrInstance = null;
 window.addEventListener('load', function(){
-  var url = document.getElementById('dashboard-url-input').value;
-  qrInstance = new QRCode(document.getElementById('qr-box'), {
-    text: url,
+  new QRCode(document.getElementById('qr-box'), {
+    text: 'https://effortless-manatee-531599.netlify.app',
     width: 160,
     height: 160,
     colorDark: '#000000',
@@ -1854,19 +1812,6 @@ window.addEventListener('load', function(){
     correctLevel: QRCode.CorrectLevel.H
   });
 });
-function updateQR(url) {
-  if (!url) return;
-  var box = document.getElementById('qr-box');
-  box.innerHTML = '';
-  qrInstance = new QRCode(box, {
-    text: url,
-    width: 160,
-    height: 160,
-    colorDark: '#000000',
-    colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.H
-  });
-}
 </script>
 </body>
 </html>

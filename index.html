@@ -555,8 +555,6 @@ window._firebaseReady = true;
         </div>
       </div>
 
-      <div id="log-wrap"><div class="empty">ยังไม่มีรายการ — กด "+ บันทึก Service ใหม่" เพื่อเริ่มต้น</div></div>
-
       <div class="filters">
         <input class="f-input" type="text" id="f-q" placeholder="ค้นหา Loop / มิเตอร์ / รายละเอียด..." oninput="renderLogs()">
         <select class="f-sel" id="f-t" onchange="renderLogs()">
@@ -1016,24 +1014,18 @@ async function fsLoadLogs(){
     renderLogs(); updateDashInfo();
   } catch(e){
     const isPermission = e.message.includes('permission') || e.message.includes('permissions');
-    const wrap = document.getElementById('log-wrap');
-    if(wrap){
-      wrap.innerHTML=`<div class="empty" style="color:var(--red)">
-        ${isPermission
-          ? '⚠ Firestore Rules ยังไม่อนุญาต — กรุณาแก้ Rules ใน Firebase Console ให้เป็น allow read, write: if true; แล้วกด Publish'
-          : 'Firestore error: '+e.message}
-      </div>`;
-    }
+    document.getElementById('log-wrap').innerHTML=`<div class="empty" style="color:var(--red)">
+      ${isPermission
+        ? '⚠ Firestore Rules ยังไม่อนุญาต — กรุณาแก้ Rules ใน Firebase Console ให้เป็น allow read, write: if true; แล้วกด Publish'
+        : 'Firestore error: '+e.message}
+    </div>`;
   }
   showLoading(false);
 }
 async function fsSaveLog(e){ return await addDoc(collection(db,COLL),{...e,ts:serverTimestamp()}); }
 async function fsUpdateLog(id,d){ await updateDoc(doc(db,COLL,id),{...d,edited:serverTimestamp()}); }
 async function fsDeleteLog(id){ await deleteDoc(doc(db,COLL,id)); }
-function showLoading(on){
-  const wrap = document.getElementById('log-wrap');
-  if(on && wrap) wrap.innerHTML = '<div class="empty">กำลังโหลด...</div>';
-}
+function showLoading(on){ if(on) document.getElementById('log-wrap').innerHTML='<div class="empty">กำลังโหลด...</div>'; }
 
 function updateDashInfo(){
   const latest = logs.find(l=>l.svcno)||logs[0];
@@ -1070,7 +1062,6 @@ window.doLogout = function(){
   document.getElementById('page-login').classList.add('active');
   document.getElementById('inp-u').value='';
   document.getElementById('inp-p').value='';
-  document.getElementById('lerr').style.display='none';
   document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
   document.querySelectorAll('.pane').forEach((p,i)=>p.classList.toggle('active',i===0));
 };
@@ -1137,7 +1128,7 @@ function renderModelCards(){
         <span>${totalLoops}</span> <span style="font-size:12px;color:var(--muted)">loops</span>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:4px">Baud Rate ${baudRate}</div>
-    </div>`;
+    </div>\`;
   grid.innerHTML = html;
 }
 
@@ -1184,14 +1175,8 @@ function initCombo(wrap) {
 }
 
 function makeComboHTML(id, currentVal, models, extraAttrs='') {
-  const opts = models.map(m =>
-    `<div class="combo-item" data-val="${m}">${m}</div>`
-  ).join('');
-  return `<span class="combo-wrap">
-    <input type="text" class="combo-inp" id="${id}" value="${currentVal||''}" 
-           placeholder="พิมพ์รุ่น..." autocomplete="off" ${extraAttrs}>
-    <div class="combo-list">${opts}</div>
-  </span>`;
+  var opts = models.map(function(m){ return '<div class="combo-item" data-val="' + m + '">' + m + '</div>'; }).join('');
+  return '<span class="combo-wrap">' + '<input type="text" class="combo-inp" id="' + id + '" value="' + (currentVal||'') + '" placeholder="พิมพ์รุ่น..." autocomplete="off" ' + extraAttrs + '>' + '<div class="combo-list">' + opts + '</div>' + '</span>';
 }
 
 
@@ -1209,8 +1194,7 @@ window.filterCombo = function(inp) {
 };
 
 function initMain(){
-  renderLoops(); renderModelCards(); populateLoopSel();
-  try { fsLoadLogs(); } catch(e) { console.error('fsLoadLogs failed', e); }
+  renderLoops(); renderModelCards(); fsLoadLogs(); populateLoopSel();
   // คำนวณ Online Rate จากข้อมูลจริงใน METER_DATA
   const totalM  = Object.values(METER_DATA).reduce((s,l)=>s+l.total,0);
   const onlineM = Object.values(METER_DATA).reduce((s,l)=>s+l.online,0);
@@ -1238,7 +1222,7 @@ function renderLoops(){
   if(titleEl) titleEl.textContent = 'Loop Summary — '+loopCount+' Loops';
   const loopData = window._cfgLoops || LOOPS;
   document.getElementById('loop-grid').innerHTML=loopData.map((l,i)=>{
-    const dots=Array.from({length:l.t},(_,d)=>`<div class="dot${d>=l.on?' off':''}"></div>`).join('');
+    var dots=Array.from({length:l.t},function(_,d){ return '<div class="dot' + (d>=l.on?' off':'') + '"></div>'; }).join('');
     return `<div class="loop-card${l.off>0?' has-off':''}" style="animation:fadeUp .4s ${.02*i}s both">
       <div class="lc-head"><div class="lc-name">Loop ${l.n}</div><div class="lc-model">${l.m}</div></div>
       <div class="dots">${dots}</div>
@@ -1456,7 +1440,7 @@ window.renderMeterChecklist = function(){
   const MODELS = ['CVM-C5','CVM-C6','CVM-C10','CVM-C11','CVM-C12c','CVM-C30','CVM-C31','CVM-B100','CVM-B150','CVM-A1500','CVMk2','CVM-NRG96','CEM-C6','CEM-C10','CEM-C30','CEM-C31','MK-LCD','EDMk','Other'];
   list.innerHTML='<div class="meter-grid">'+loopData.meters.map(m=>{
     const isOn = m.online;
-    const modelOpts = MODELS.map(mo=>`<div class="combo-item" data-val="${mo}">${mo}</div>`).join('');
+    var modelOpts = MODELS.map(function(mo){ return '<div class="combo-item" data-val="' + mo + '">' + mo + '</div>'; }).join('');
     return `<div class="meter-row ${isOn?'is-online':'is-offline'}" id="mr-${loopNum}-${m.no}" onclick="openMeterDetail('${loopNum}',${m.no})" style="cursor:pointer">
       <input type="checkbox" class="meter-chk" ${isOn?'checked':''}
         onclick="event.stopPropagation()"
@@ -1746,7 +1730,6 @@ window.renderLogs = function(){
   const q=(document.getElementById('f-q')?.value||'').toLowerCase(), t=document.getElementById('f-t')?.value||'';
   const list=logs.filter(l=>(!t||l.type===t)&&(!q||[l.loop,l.meter,l.detail,l.tech,l.sold,l.snew,l.svcno].some(v=>String(v||'').toLowerCase().includes(q))));
   const wrap=document.getElementById('log-wrap');
-  if(!wrap) return;
   if(!list.length){ wrap.innerHTML=`<div class="empty">${logs.length?'ไม่พบรายการที่ตรงกับเงื่อนไข':'ยังไม่มีรายการ — กด "+ บันทึก Service ใหม่" เพื่อเริ่มต้น'}</div>`; return; }
   wrap.innerHTML='<div class="log-list">'+list.map((l,i)=>{
     const d=new Date(l.ts), ds=isNaN(d)?'-':d.toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'}), ts=isNaN(d)?'-':d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
@@ -1763,7 +1746,7 @@ window.renderLogs = function(){
         <div class="log-tag ${TCLASS[l.type]}">${TLABEL[l.type]}</div>
         <div class="log-desc">Loop ${l.loop} — ${l.meter}</div>
         ${l.detail?`<div class="log-note">${l.detail}</div>`:''}
-        <div class="log-meta">${meta.map(m=>`<span>${m}</span>`).join('')}</div>
+        <div class="log-meta">${meta.map(function(x){ return '<span>'+x+'</span>'; }).join('')}</div>
         ${imgHtml}
         <button class="btn-edit" onclick="openEditModal('${l._id}')">✏ แก้ไข</button>
       </div>

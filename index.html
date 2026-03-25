@@ -2,6 +2,9 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Meter Service System — Energy Link Technology</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -1177,14 +1180,14 @@ function initCombo(wrap) {
 }
 
 function makeComboHTML(id, currentVal, models, extraAttrs='') {
-  const opts = models.map(m =>
-    `<div class="combo-item" data-val="${m}">${m}</div>`
-  ).join('');
-  return `<span class="combo-wrap">
-    <input type="text" class="combo-inp" id="${id}" value="${currentVal||''}" 
-           placeholder="พิมพ์รุ่น..." autocomplete="off" ${extraAttrs}>
-    <div class="combo-list">${opts}</div>
-  </span>`;
+  const opts = models.map(function(m) {
+    return '<div class="combo-item" data-val="' + m + '">' + m + '</div>';
+  }).join('');
+  return '<span class="combo-wrap">' +
+    '<input type="text" class="combo-inp" id="' + id + '" value="' + (currentVal||'') + '" ' +
+    'placeholder="พิมพ์รุ่น..." autocomplete="off" ' + extraAttrs + '>' +
+    '<div class="combo-list">' + opts + '</div>' +
+    '</span>';
 }
 
 

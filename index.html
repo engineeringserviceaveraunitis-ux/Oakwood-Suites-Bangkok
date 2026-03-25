@@ -532,7 +532,7 @@ window._firebaseReady = true;
         <div style="flex-shrink:0;background:#fff;padding:12px;border-radius:6px" id="qr-box"></div>
         <div style="flex:1;min-width:200px">
           <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Dashboard URL</div>
-          <div style="font-family:var(--mono);font-size:12px;color:var(--accent);word-break:break-all;background:var(--surface2);padding:10px 14px;border-radius:4px;border:1px solid var(--border)">https://engineeringserviceaveraunitis-ux.github.io/Oakwood-Suites-Bangkok/</div>
+          <input id="dashboard-url-input" type="text" value="https://engineeringserviceaveraunitis-ux.github.io/Oakwood-Suites-Bangkok/" oninput="updateQR(this.value)" style="font-family:var(--mono);font-size:12px;color:var(--accent);word-break:break-all;background:var(--surface2);padding:10px 14px;border-radius:4px;border:1px solid var(--border);width:100%;outline:none;box-sizing:border-box;" />
           <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:12px;line-height:1.7">
             สแกน QR Code ด้วยกล้องมือถือ<br>เพื่อเปิดหน้า Dashboard ได้ทันที
           </div>
@@ -1299,8 +1299,7 @@ async function loadProjectSettingsForm(){
   const map = {
     'ps-name':cfg.name,'ps-name-hl':cfg.nameHl,'ps-svcno':cfg.svcno,
     'ps-system':cfg.system,'ps-protocol':cfg.protocol,'ps-protocol-sub':cfg.protocolSub,'ps-total':cfg.total,'ps-online':cfg.online,
-    'ps-offline':cfg.offline,'ps-loops':cfg.loops,
-    'ps-baudrate':cfg.baudrate,
+    'ps-offline':cfg.offline,'ps-loops':cfg.loops,'ps-baudrate':cfg.baudrate,
     'ps-m1-name':cfg.m1Name,'ps-m1-desc':cfg.m1Desc,'ps-m1-count':cfg.m1Count,'ps-m1-note':cfg.m1Note,
     'ps-m2-name':cfg.m2Name,'ps-m2-count':cfg.m2Count,'ps-m2-note':cfg.m2Note,
   };
@@ -1842,9 +1841,11 @@ document.head.appendChild(st);
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
+var qrInstance = null;
 window.addEventListener('load', function(){
-  new QRCode(document.getElementById('qr-box'), {
-    text: 'https://engineeringserviceaveraunitis-ux.github.io/Oakwood-Suites-Bangkok/',
+  var url = document.getElementById('dashboard-url-input').value;
+  qrInstance = new QRCode(document.getElementById('qr-box'), {
+    text: url,
     width: 160,
     height: 160,
     colorDark: '#000000',
@@ -1852,6 +1853,19 @@ window.addEventListener('load', function(){
     correctLevel: QRCode.CorrectLevel.H
   });
 });
+function updateQR(url) {
+  if (!url) return;
+  var box = document.getElementById('qr-box');
+  box.innerHTML = '';
+  qrInstance = new QRCode(box, {
+    text: url,
+    width: 160,
+    height: 160,
+    colorDark: '#000000',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+}
 </script>
 </body>
 </html>

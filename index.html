@@ -417,6 +417,27 @@ body::before {
 .combo-item:hover, .combo-item.active { background:var(--accent); color:#000; }
 
 </style>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, orderBy, query, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBau2ONqedioD-S73lFVEqyLOpbTAUBFuU",
+  authDomain: "oakwood-suites-bangkok.firebaseapp.com",
+  projectId: "oakwood-suites-bangkok",
+  storageBucket: "oakwood-suites-bangkok.firebasestorage.app",
+  messagingSenderId: "116441519988",
+  appId: "1:116441519988:web:0ec170f8649192d76bfe21"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Expose to window for use by other scripts
+window._db = db;
+window._fsAPI = { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, orderBy, query, serverTimestamp };
+window._firebaseReady = true;
+</script>
 </head>
 <body>
 
@@ -511,7 +532,7 @@ body::before {
         <div style="flex-shrink:0;background:#fff;padding:12px;border-radius:6px" id="qr-box"></div>
         <div style="flex:1;min-width:200px">
           <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Dashboard URL</div>
-          <div style="font-family:var(--mono);font-size:12px;color:var(--accent);word-break:break-all;background:var(--surface2);padding:10px 14px;border-radius:4px;border:1px solid var(--border)">https://effortless-manatee-531599.netlify.app</div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--accent);word-break:break-all;background:var(--surface2);padding:10px 14px;border-radius:4px;border:1px solid var(--border)">https://engineeringserviceaveraunitis-ux.github.io/Oakwood-Suites-Bangkok/</div>
           <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:12px;line-height:1.7">
             สแกน QR Code ด้วยกล้องมือถือ<br>เพื่อเปิดหน้า Dashboard ได้ทันที
           </div>
@@ -562,6 +583,16 @@ body::before {
           <div class="mfield"><label>ชื่อย่อ (Highlight สีฟ้า)</label><input type="text" id="ps-name-hl" placeholder="เช่น Bangkok"></div>
           <div class="mfield"><label>Service No.</label><input type="text" id="ps-svcno" placeholder="เช่น SER.6805003"></div>
           <div class="mfield"><label>ระบบ (System)</label><input type="text" id="ps-system" placeholder="Retail Management System (RMS)"></div>
+          <div class="mfield"><label>Protocol</label><input type="text" id="ps-protocol" placeholder="เช่น RS-485"></div>
+          <div class="mfield"><label>Baud Rate</label>
+            <select id="ps-baudrate" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:3px;padding:8px 10px;font-family:var(--mono);font-size:12px">
+              <option value="9600">9600</option>
+              <option value="19200">19200</option>
+              <option value="38400">38400</option>
+              <option value="57600">57600</option>
+              <option value="115200">115200</option>
+            </select>
+          </div>
         </div>
 
         <!-- Loop Selector -->
@@ -915,20 +946,17 @@ window.renderLogs      = function(){};
 
 /* ── FIREBASE via dynamic import ── */
 (async () => {
-const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
-const { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, orderBy, query, serverTimestamp }
-  = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  // Wait for Firebase to be ready (loaded via module script)
+  let tries = 0;
+  while(!window._db && tries < 100) {
+    await new Promise(r => setTimeout(r, 100));
+    tries++;
+  }
+  if(!window._db) { console.error('Firebase load timeout'); return; }
+  
+  const db = window._db;
+  const { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, orderBy, query, serverTimestamp } = window._fsAPI;
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBau2ONqedioD-S73lFVEqyLOpbTAUBFuU",
-  authDomain: "oakwood-suites-bangkok.firebaseapp.com",
-  projectId: "oakwood-suites-bangkok",
-  storageBucket: "oakwood-suites-bangkok.firebasestorage.app",
-  messagingSenderId: "116441519988",
-  appId: "1:116441519988:web:0ec170f8649192d76bfe21"
-};
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
 
 // Signal that Firebase is ready
 window._firebaseReady = true;
@@ -1088,17 +1116,19 @@ function renderModelCards(){
       </div>
     </div>`;
   });
-  // Protocol card
+    // Protocol card (dynamic)
+  const protoName = window._protocolName || 'RS-485';
+  const baudRate  = window._baudRate     || '9600';
   html += `
     <div class="model-card" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px">
       <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:6px">PROTOCOL</div>
-      <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--green)">RS-485</div>
+      <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--green)">${protoName}</div>
       <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:4px">Modbus RTU</div>
-      <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--text);margin-top:8px">
+      <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--text);margin-top:10px">
         <span>${totalLoops}</span> <span style="font-size:12px;color:var(--muted)">loops</span>
       </div>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px">Baud Rate 9600 · System RMS</div>
-    </div>`;
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Baud Rate ${baudRate}</div>
+    </div>\`;
   grid.innerHTML = html;
 }
 
@@ -1266,7 +1296,7 @@ async function loadProjectSettingsForm(){
   if(!cfg) return;
   const map = {
     'ps-name':cfg.name,'ps-name-hl':cfg.nameHl,'ps-svcno':cfg.svcno,
-    'ps-system':cfg.system,'ps-total':cfg.total,'ps-online':cfg.online,
+    'ps-system':cfg.system,'ps-protocol':cfg.protocol,'ps-total':cfg.total,'ps-online':cfg.online,
     'ps-offline':cfg.offline,'ps-loops':cfg.loops,
     'ps-m1-name':cfg.m1Name,'ps-m1-desc':cfg.m1Desc,'ps-m1-count':cfg.m1Count,'ps-m1-note':cfg.m1Note,
     'ps-m2-name':cfg.m2Name,'ps-m2-count':cfg.m2Count,'ps-m2-note':cfg.m2Note,
@@ -1289,7 +1319,7 @@ window.saveProjectSettings = async function(){
 
   const cfg = {};
   const vals = {
-    name:g('ps-name'), nameHl:g('ps-name-hl'), svcno:g('ps-svcno'), system:g('ps-system'),
+    name:g('ps-name'), nameHl:g('ps-name-hl'), svcno:g('ps-svcno'), system:g('ps-system'), protocol:g('ps-protocol'), baudrate:g('ps-baudrate'),
     total: loopsData.reduce((s,l)=>s+l.t,0),
     online: loopsData.reduce((s,l)=>s+l.on,0),
     offline: loopsData.reduce((s,l)=>s+l.off,0),
@@ -1518,6 +1548,12 @@ window.saveMeterDetail = function(){
     document.getElementById('md-title').textContent = `Loop ${loopNum} — #${m.no} ${m.name}`;
   }
 
+  // Update Protocol card
+  if(cfg.protocol || cfg.baudrate){
+    window._protocolName = cfg.protocol || 'RS-485';
+    window._baudRate = cfg.baudrate || '9600';
+    renderModelCards();
+  }
   // Update model cards on dashboard
   renderModelCards();
   // Show saved indicator
@@ -1804,7 +1840,7 @@ document.head.appendChild(st);
 <script>
 window.addEventListener('load', function(){
   new QRCode(document.getElementById('qr-box'), {
-    text: 'https://effortless-manatee-531599.netlify.app',
+    text: 'https://engineeringserviceaveraunitis-ux.github.io/Oakwood-Suites-Bangkok/',
     width: 160,
     height: 160,
     colorDark: '#000000',

@@ -584,6 +584,7 @@ window._firebaseReady = true;
           <div class="mfield"><label>Service No.</label><input type="text" id="ps-svcno" placeholder="เช่น SER.6805003"></div>
           <div class="mfield"><label>ระบบ (System)</label><input type="text" id="ps-system" placeholder="Retail Management System (RMS)"></div>
           <div class="mfield"><label>Protocol</label><input type="text" id="ps-protocol" placeholder="เช่น RS-485"></div>
+          <div class="mfield"><label>Protocol Sub (เช่น Modbus RTU)</label><input type="text" id="ps-protocol-sub" placeholder="เช่น Modbus RTU"></div>
           <div class="mfield"><label>Baud Rate</label>
             <select id="ps-baudrate" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:3px;padding:8px 10px;font-family:var(--mono);font-size:12px">
               <option value="9600">9600</option>
@@ -1118,12 +1119,13 @@ function renderModelCards(){
   });
     // Protocol card (dynamic)
   const protoName = window._protocolName || 'RS-485';
+  const protoSub  = window._protocolSub  || 'Modbus RTU';
   const baudRate  = window._baudRate     || '9600';
   html += `
     <div class="model-card" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px">
       <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:6px">PROTOCOL</div>
       <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--green)">${protoName}</div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:4px">Modbus RTU</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:4px">${protoSub}</div>
       <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--text);margin-top:10px">
         <span>${totalLoops}</span> <span style="font-size:12px;color:var(--muted)">loops</span>
       </div>
@@ -1296,8 +1298,9 @@ async function loadProjectSettingsForm(){
   if(!cfg) return;
   const map = {
     'ps-name':cfg.name,'ps-name-hl':cfg.nameHl,'ps-svcno':cfg.svcno,
-    'ps-system':cfg.system,'ps-protocol':cfg.protocol,'ps-total':cfg.total,'ps-online':cfg.online,
+    'ps-system':cfg.system,'ps-protocol':cfg.protocol,'ps-protocol-sub':cfg.protocolSub,'ps-total':cfg.total,'ps-online':cfg.online,
     'ps-offline':cfg.offline,'ps-loops':cfg.loops,
+    'ps-baudrate':cfg.baudrate,
     'ps-m1-name':cfg.m1Name,'ps-m1-desc':cfg.m1Desc,'ps-m1-count':cfg.m1Count,'ps-m1-note':cfg.m1Note,
     'ps-m2-name':cfg.m2Name,'ps-m2-count':cfg.m2Count,'ps-m2-note':cfg.m2Note,
   };
@@ -1319,7 +1322,7 @@ window.saveProjectSettings = async function(){
 
   const cfg = {};
   const vals = {
-    name:g('ps-name'), nameHl:g('ps-name-hl'), svcno:g('ps-svcno'), system:g('ps-system'), protocol:g('ps-protocol'), baudrate:g('ps-baudrate'),
+    name:g('ps-name'), nameHl:g('ps-name-hl'), svcno:g('ps-svcno'), system:g('ps-system'), protocol:g('ps-protocol'), protocolSub:g('ps-protocol-sub'), baudrate:g('ps-baudrate'),
     total: loopsData.reduce((s,l)=>s+l.t,0),
     online: loopsData.reduce((s,l)=>s+l.on,0),
     offline: loopsData.reduce((s,l)=>s+l.off,0),
@@ -1551,6 +1554,7 @@ window.saveMeterDetail = function(){
   // Update Protocol card
   if(cfg.protocol || cfg.baudrate){
     window._protocolName = cfg.protocol || 'RS-485';
+    window._protocolSub  = cfg.protocolSub || 'Modbus RTU';
     window._baudRate = cfg.baudrate || '9600';
     renderModelCards();
   }

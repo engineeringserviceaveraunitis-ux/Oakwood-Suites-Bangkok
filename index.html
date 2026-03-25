@@ -1177,14 +1177,14 @@ function initCombo(wrap) {
 }
 
 function makeComboHTML(id, currentVal, models, extraAttrs='') {
-  const opts = models.map(m =>
-    '<div class="combo-item" data-val="' + m + '">' + m + '</div>'
-  ).join('');
-  return `<span class="combo-wrap">
-    <input type="text" class="combo-inp" id="${id}" value="${currentVal||''}" 
-           placeholder="พิมพ์รุ่น..." autocomplete="off" ${extraAttrs}>
-    <div class="combo-list">${opts}</div>
-  </span>`;
+  const opts = models.map(function(m) {
+    return '<div class="combo-item" data-val="' + m + '">' + m + '</div>';
+  }).join('');
+  return '<span class="combo-wrap">' +
+    '<input type="text" class="combo-inp" id="' + id + '" value="' + (currentVal||'') + '" ' +
+    'placeholder="พิมพ์รุ่น..." autocomplete="off" ' + extraAttrs + '>' +
+    '<div class="combo-list">' + opts + '</div>' +
+    '</span>';
 }
 
 

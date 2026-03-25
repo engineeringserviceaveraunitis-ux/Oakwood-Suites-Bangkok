@@ -2,9 +2,6 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Meter Service System — Energy Link Technology</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -1180,14 +1177,14 @@ function initCombo(wrap) {
 }
 
 function makeComboHTML(id, currentVal, models, extraAttrs='') {
-  const opts = models.map(function(m) {
-    return '<div class="combo-item" data-val="' + m + '">' + m + '</div>';
-  }).join('');
-  return '<span class="combo-wrap">' +
-    '<input type="text" class="combo-inp" id="' + id + '" value="' + (currentVal||'') + '" ' +
-    'placeholder="พิมพ์รุ่น..." autocomplete="off" ' + extraAttrs + '>' +
-    '<div class="combo-list">' + opts + '</div>' +
-    '</span>';
+  const opts = models.map(m =>
+    '<div class="combo-item" data-val="' + m + '">' + m + '</div>'
+  ).join('');
+  return `<span class="combo-wrap">
+    <input type="text" class="combo-inp" id="${id}" value="${currentVal||''}" 
+           placeholder="พิมพ์รุ่น..." autocomplete="off" ${extraAttrs}>
+    <div class="combo-list">${opts}</div>
+  </span>`;
 }
 
 
@@ -1233,7 +1230,7 @@ function renderLoops(){
   if(titleEl) titleEl.textContent = 'Loop Summary — '+loopCount+' Loops';
   const loopData = window._cfgLoops || LOOPS;
   document.getElementById('loop-grid').innerHTML=loopData.map((l,i)=>{
-    const dots=Array.from({length:l.t},(_,d)=>`<div class="dot${d>=l.on?' off':''}"></div>`).join('');
+    const dots=Array.from({length:l.t},function(_,d){ return '<div class="dot' + (d>=l.on?' off':'') + '"></div>'; }).join('');
     return `<div class="loop-card${l.off>0?' has-off':''}" style="animation:fadeUp .4s ${.02*i}s both">
       <div class="lc-head"><div class="lc-name">Loop ${l.n}</div><div class="lc-model">${l.m}</div></div>
       <div class="dots">${dots}</div>
@@ -1451,7 +1448,7 @@ window.renderMeterChecklist = function(){
   const MODELS = ['CVM-C5','CVM-C6','CVM-C10','CVM-C11','CVM-C12c','CVM-C30','CVM-C31','CVM-B100','CVM-B150','CVM-A1500','CVMk2','CVM-NRG96','CEM-C6','CEM-C10','CEM-C30','CEM-C31','MK-LCD','EDMk','Other'];
   list.innerHTML='<div class="meter-grid">'+loopData.meters.map(m=>{
     const isOn = m.online;
-    const modelOpts = MODELS.map(mo=>`<div class="combo-item" data-val="${mo}">${mo}</div>`).join('');
+    const modelOpts = MODELS.map(function(mo){ return '<div class="combo-item" data-val="' + mo + '">' + mo + '</div>'; }).join('');
     return `<div class="meter-row ${isOn?'is-online':'is-offline'}" id="mr-${loopNum}-${m.no}" onclick="openMeterDetail('${loopNum}',${m.no})" style="cursor:pointer">
       <input type="checkbox" class="meter-chk" ${isOn?'checked':''}
         onclick="event.stopPropagation()"
@@ -1758,7 +1755,7 @@ window.renderLogs = function(){
         <div class="log-tag ${TCLASS[l.type]}">${TLABEL[l.type]}</div>
         <div class="log-desc">Loop ${l.loop} — ${l.meter}</div>
         ${l.detail?`<div class="log-note">${l.detail}</div>`:''}
-        <div class="log-meta">${meta.map(m=>`<span>${m}</span>`).join('')}</div>
+        <div class="log-meta">${meta.map(function(x){ return '<span>'+x+'</span>'; }).join('')}</div>
         ${imgHtml}
         <button class="btn-edit" onclick="openEditModal('${l._id}')">✏ แก้ไข</button>
       </div>
